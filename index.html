@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <script defer src="main.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <app-bar></app-bar>
+  
+    <div id="loading-indicator" style="display:none;">Loading...</div>
+  
+    <main>
+      <section id="add-note-section">
+        <h2>Add Note</h2>
+        <note-form>
+          <div>
+            <label for="noteTitle">Title</label>
+            <input id="noteTitle" type="text" placeholder="Note title" required />
+          </div>
+          <div>
+            <label for="noteBody">Note</label>
+            <textarea id="noteBody" placeholder="Write your note here..." required></textarea>
+          </div>
+          <button type="submit">Add Note</button>
+        </note-form>
+      </section>
+  
+      <section id="notes-section">
+        <h2>Your Notes</h2>
+        <div id="notesList" class="notes-grid"></div>
+      </section>
+    </main>
+  </body>  
+</html>

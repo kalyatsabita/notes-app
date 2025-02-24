@@ -1,0 +1,101 @@
+body {
+  font-family: 'Times New Roman', serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: #FCFFC1;
+  color: #333;
+}
+
+section {
+  margin-top: 30px;
+  margin-left: 200px;
+  margin-right: 200px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  background-color: #DEB887;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #333;
+}
+
+label {
+  display: block; 
+  margin-bottom: 5px; 
+}
+
+input, textarea {
+  margin: 10px 0;
+  padding: 10px;
+  width: 90%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.note-item {
+  padding: 15px;
+  background: #f4f4f4;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.note-item h3 {
+  margin: 0 0 10px;
+}
+
+.note-item p {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  header {
+      padding: 1rem;
+      text-align: center;
+  }
+
+  section {
+    margin: 20px;
+  }
+
+  .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+  }
+
+  label, input, textarea, button {
+    font-size: 1rem; 
+  }
+
+  input, textarea {
+    padding: 12px; 
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  section {
+    max-width: 900px; 
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
