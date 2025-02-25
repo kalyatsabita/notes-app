@@ -1,11 +1,12 @@
-class LoadingIndicator extends HTMLElement {
+if (!customElements.get('loading-indicator')) {
+  customElements.define('loading-indicator', class LoadingIndicator extends HTMLElement {
     constructor() {
       super();
       const shadow = this.attachShadow({ mode: 'open' });
       shadow.innerHTML = `
         <style>
           .loading {
-            display: block;
+            display: none; /* Hidden by default */
             margin: 50px auto;
             width: 50px;
             height: 50px;
@@ -22,7 +23,9 @@ class LoadingIndicator extends HTMLElement {
         <div class="loading"></div>
       `;
     }
-  }
-  
-  customElements.define('loading-indicator', LoadingIndicator);
-  
+
+    connectedCallback() {
+      this.shadowRoot.querySelector('.loading').style.display = 'block';
+    }
+  });
+}

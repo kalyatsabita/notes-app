@@ -44,6 +44,12 @@ input, textarea {
   border-radius: 5px;
 }
 
+#loading {
+  display: none; /* Hidden by default */
+  text-align: center;
+  margin: 20px;
+}
+
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
