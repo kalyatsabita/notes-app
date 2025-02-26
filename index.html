@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notes App</title>
-    <script src="loading-indicator.js"></script>
-    <script src="main.js"></script>
-    <!-- <script defer src="main.js"></script> -->
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <app-bar></app-bar>
-    <loading-indicator id="loading"></loading-indicator>
+
     <main>
+      <div id="loading" class="loading">Loading...</div>
       <section id="add-note-section">
         <h2>Add Note</h2>
         <note-form>
@@ -27,11 +25,12 @@
           <button type="submit">Add Note</button>
         </note-form>
       </section>
-  
+
       <section id="notes-section">
         <h2>Your Notes</h2>
         <div id="notesList" class="notes-grid"></div>
       </section>
     </main>
-  </body>  
+    <script src="bundle.js"></script>
+  </body>
 </html>

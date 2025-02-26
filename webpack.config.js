@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: './main.js',
   output: {
-    filename: 'main.js',
+    filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
   module: {
@@ -21,9 +21,12 @@ module.exports = {
     }),
   ],
   devServer: {
-    static: path.join(__dirname, 'dist'),
+    static: {
+      directory: path.join(__dirname, 'dist'), // Ganti 'contentBase' dengan 'static.directory'
+    },
     compress: true,
     port: 9000,
+    open: true, // Opsi untuk membuka browser secara otomatis
   },
   mode: 'development',
 };

@@ -1,146 +1,98 @@
-// Import LoadingIndicator jika diperlukan
-import './loading-indicator.js';
-// import './style.css';
+let notesData = [];
 
-
-const apiBaseUrl = 'https://notes-api.dicoding.dev/v2';
 document.addEventListener('DOMContentLoaded', () => {
-  renderLoading(true); // Tampilkan loading indicator
-  fetchNotes()
-    .then(notes => {
-      renderNotes(notes);
-      renderLoading(false); // Sembunyikan loading indicator
-    })
-    .catch(error => {
-      console.error('Error fetching notes:', error);
-      renderLoading(false); // Sembunyikan loading indicator jika terjadi error
-    });
-
-  const noteForm = document.querySelector('note-form');
-  noteForm.addEventListener('add-note', (event) => {
-    const newNote = event.detail.newNote;
-    createNote(newNote)
-      .then(() => fetchNotes())
-      .then(notes => renderNotes(notes))
-      .catch(error => console.error('Error creating note:', error));
-  });
+  fetchNotes();
 });
 
-const showLoading = () => {
-  document.getElementById('loading').style.display = 'block';
-};
+const loading = document.getElementById('loading');
 
-const hideLoading = () => {
-  document.getElementById('loading').style.display = 'none';
-};
+import Swal from 'sweetalert2';
 
 const fetchNotes = async () => {
-  showLoading(); // Tampilkan loading
+  loading.classList.add('active');
   try {
     const response = await fetch('https://notes-api.dicoding.dev/v2/notes');
     const data = await response.json();
-    console.log('Data dari API:', data); // Periksa data yang diterima
-    if (data.data) {
-      renderNotes(data.data); // Render data ke DOM
-    } else {
-      console.error('Data tidak ditemukan');
-    }
+    notesData = data.data;
+    renderNotes();
   } catch (error) {
-    console.error('Gagal mengambil data:', error);
-    alert('Gagal mengambil data!');
+    console.error('Failed to fetch notes:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to fetch notes!',
+    });
   } finally {
-    hideLoading(); // Sembunyikan loading
+    loading.classList.remove('active');
   }
 };
 
-// Add new note using API
-const createNote = async (newNote) => {
+const addNote = async (newNote) => {
+  loading.classList.add('active');
   try {
-    const response = await fetch(`${apiBaseUrl}/notes`, {
+    const response = await fetch('https://notes-api.dicoding.dev/v2/notes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(newNote),
     });
-    return response.json();
+    const addedNote = await response.json();
+    notesData.push(addedNote.data);
+    renderNotes();
   } catch (error) {
     console.error('Failed to add note:', error);
-    alert('Failed to add note!');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to add note!',
+    });
+  } finally {
+    loading.classList.remove('active');
   }
 };
 
-const renderNotes = (notes) => {
-  const notesList = document.getElementById('notesList');
-  notesList.innerHTML = ''; // Kosongkan konten sebelumnya
-
-  if (notes.length === 0) {
-    notesList.innerHTML = '<p>Tidak ada catatan.</p>'; // Tampilkan pesan jika tidak ada data
-    return;
+const deleteNote = async (noteId) => {
+  loading.classList.add('active');
+  try {
+    await fetch(`https://notes-api.dicoding.dev/v2/notes/${noteId}`, {
+      method: 'DELETE',
+    });
+    notesData = notesData.filter(note => note.id !== noteId);
+    renderNotes();
+  } catch (error) {
+    console.error('Failed to delete note:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to delete note!',
+    });
+  } finally {
+    loading.classList.remove('active');
   }
+};
 
-  notes.forEach(note => {
+import anime from 'animejs/lib/anime.es.js';
+
+const renderNotes = () => {
+  const notesList = document.getElementById('notesList');
+  notesList.innerHTML = ''; 
+
+  notesData.forEach(note => {
     const noteElement = document.createElement('note-item');
-    noteElement.noteData = note; // Set data ke custom element
+    noteElement.noteData = note;
     notesList.appendChild(noteElement);
   });
+
+  anime({
+    targets: '.note-item',
+    opacity: [0, 1],
+    translateY: [20, 0],
+    duration: 800,
+    easing: 'easeOutExpo',
+    delay: anime.stagger(100),
+  });
 };
-
-
-class NoteItem extends HTMLElement {
-  constructor() {
-    super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.innerHTML = `
-      <style>
-        .note-item {
-          padding: 15px;
-          background: #f4f4f4;
-          border-radius: 8px;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-        .note-item h3 {
-          margin: 0 0 10px;
-        }
-        .note-item p {
-          margin: 0;
-        }
-        .note-item span {
-          font-size: 0.8rem;
-          color: #888;
-        }
-      </style>
-      <div class="note-item">
-        <h3></h3>
-        <p></p>
-        <span></span>
-        <button class="delete-btn">Delete</button>
-      </div>
-    `;
-  }
-
-  connectedCallback() {
-    this.updateContent();
-    this.shadowRoot.querySelector('.delete-btn').addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('delete-note'));
-    });
-  }
-
-  set noteData(data) {
-    this._noteData = data;
-    this.updateContent();
-  }
-
-  updateContent() {
-    if (this._noteData) {
-      this.shadowRoot.querySelector('h3').textContent = this._noteData.title;
-      this.shadowRoot.querySelector('p').textContent = this._noteData.body;
-      this.shadowRoot.querySelector('span').textContent = new Date(this._noteData.createdAt).toLocaleString();
-    }
-  }
-}
-
-customElements.define('note-item', NoteItem);
 
 class NoteForm extends HTMLElement {
   constructor() {
@@ -211,14 +163,11 @@ class NoteForm extends HTMLElement {
     }
 
     const newNote = {
-      id: Date.now(),
       title,
       body,
-      createdAt: new Date().toISOString(),
     };
 
-    const eventDetail = { newNote };
-    this.dispatchEvent(new CustomEvent('add-note', { detail: eventDetail }));
+    addNote(newNote);
 
     this.shadowRoot.querySelector('#noteForm').reset();
     this.clearErrors();
@@ -252,10 +201,86 @@ class NoteForm extends HTMLElement {
 
 customElements.define('note-form', NoteForm);
 
+const archiveNote = async (noteId) => {
+  try {
+    await fetch(`https://notes-api.dicoding.dev/v2/notes/${noteId}/archive`, {
+      method: 'POST',
+    });
+    fetchNotes(); // Refresh the notes list
+  } catch (error) {
+    console.error('Failed to archive note:', error);
+    alert('Failed to archive note!');
+  }
+};
+
+// Add archive button to NoteItem
+class NoteItem extends HTMLElement {
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `
+      <style>
+        .note-item {
+          padding: 15px;
+          background: #f4f4f4;
+          border-radius: 8px;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        .note-item h3 {
+          margin: 0 0 10px;
+        }
+        .note-item p {
+          margin: 0;
+        }
+        .note-item span {
+          font-size: 0.8rem;
+          color: #888;
+        }
+        .note-item button {
+          margin-right: 5px;
+        }
+      </style>
+      <div class="note-item">
+        <h3></h3>
+        <p></p>
+        <span></span>
+        <button class="delete-btn">Delete</button>
+        <button class="archive-btn">Archive</button>
+      </div>
+    `;
+  }
+
+  connectedCallback() {
+    this.shadowRoot.querySelector('.delete-btn').addEventListener('click', () => {
+      const noteId = this._noteData.id;
+      deleteNote(noteId);
+    });
+
+    this.shadowRoot.querySelector('.archive-btn').addEventListener('click', () => {
+      const noteId = this._noteData.id;
+      archiveNote(noteId);
+    });
+  }
+
+  set noteData(data) {
+    this._noteData = data;
+    this.updateContent();
+  }
+
+  updateContent() {
+    if (this._noteData) {
+      this.shadowRoot.querySelector('h3').textContent = this._noteData.title;
+      this.shadowRoot.querySelector('p').textContent = this._noteData.body;
+      this.shadowRoot.querySelector('span').textContent = new Date(this._noteData.createdAt).toLocaleString();
+    }
+  }
+}
+
+customElements.define('note-item', NoteItem);
+
 class AppBar extends HTMLElement {
   constructor() {
     super();
-    console.log('AppBar component created')
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.innerHTML = `
       <style>
@@ -272,29 +297,5 @@ class AppBar extends HTMLElement {
     `;
   }
 }
-
-// Delete note using API
-const deleteNote = async (noteId) => {
-  try {
-    await fetch(`${apiBaseUrl}/notes/${noteId}`, {
-      method: 'DELETE',
-    });
-  } catch (error) {
-    console.error('Failed to delete note:', error);
-    alert('Failed to delete note!');
-  }
-};
-
-const archiveNote = async (noteId) => {
-  try {
-    await fetch(`https://notes-api.dicoding.dev/v2/notes/${noteId}/archive`, {
-      method: 'POST',
-    });
-    fetchNotes(); // Refresh the notes list
-  } catch (error) {
-    console.error('Failed to archive note:', error);
-    alert('Failed to archive note!');
-  }
-};
 
 customElements.define('app-bar', AppBar);
